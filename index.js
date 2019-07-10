@@ -16,10 +16,12 @@ function WebValve (log, config) {
   this.name = config.name
   this.apiroute = config.apiroute
   this.pollInterval = config.pollInterval || 300
-  
+
   this.listener = config.listener || false
   this.port = config.port || 2000
-  this.requestArray = ['color', 'brightness', 'state']
+  this.requestArray = ['state']
+
+  this.valveType = config.valveType || 0
 
   this.manufacturer = config.manufacturer || packageJson.author.name
   this.serial = config.serial || this.apiroute
@@ -30,13 +32,6 @@ function WebValve (log, config) {
   this.password = config.password || null
   this.timeout = config.timeout || 3000
   this.http_method = config.http_method || 'GET'
-
-  this.enableColor = config.enableColor || true
-  this.enableBrightness = config.enableBrightness || true
-
-  this.cacheHue = 0
-  this.cacheSaturation = 0
-  this.count = 0
 
   if (this.username != null && this.password != null) {
     this.auth = {
@@ -65,7 +60,7 @@ function WebValve (log, config) {
     }.bind(this))
   }
 
-  this.service = new Service.Lightbulb(this.name)
+  this.service = new Service.Valve(this.name)
 }
 
 WebValve.prototype = {
@@ -96,26 +91,14 @@ WebValve.prototype = {
     this._httpRequest(url, '', 'GET', function (error, response, responseBody) {
       if (error) {
         this.log.warn('Error getting status: %s', error.message)
-        this.service.getCharacteristic(Characteristic.On).updateValue(new Error('Polling failed'))
+        this.service.getCharacteristic(Characteristic.Active).updateValue(new Error('Polling failed'))
         callback(error)
       } else {
         this.log('Device response: %s', responseBody)
         var json = JSON.parse(responseBody)
-        var hsv = convert.hex.hsv(json.currentColor)
-        this.cacheHue = hsv[0]
-        this.cacheSaturation = hsv[1]
-        this.service.getCharacteristic(Characteristic.On).updateValue(json.currentState)
+        this.service.getCharacteristic(Characteristic.Active).updateValue(json.currentState)
+        this.service.getCharacteristic(Characteristic.InUse).updateValue(json.currentState)
         this.log('Updated state: %s', json.currentState)
-        if (this.enableBrightness) {
-          this.service.getCharacteristic(Characteristic.Brightness).updateValue(json.currentBrightness)
-          this.log('Updated brightness: %s', json.currentBrightness)
-        }
-        if (this.enableColor) {
-          this.service.getCharacteristic(Characteristic.Hue).updateValue(this.cacheHue)
-          this.log('Updated hue: %s', this.cacheHue)
-          this.service.getCharacteristic(Characteristic.Saturation).updateValue(this.cacheSaturation)
-          this.log('Updated saturation: %s', this.cacheSaturation)
-        }
         callback()
       }
     }.bind(this))
@@ -125,27 +108,15 @@ WebValve.prototype = {
     switch (characteristic) {
       case 'state':
         this.log('Updating %s to: %s', characteristic, value)
-        this.service.getCharacteristic(Characteristic.On).updateValue(value)
-        break
-      case 'brightness':
-        this.log('Updating %s to: %s', characteristic, value)
-        this.service.getCharacteristic(Characteristic.Brightness).updateValue(value)
-        break
-      case 'color':
-        var hsv = convert.hex.hsv(value)
-        this.cacheHue = hsv[0]
-        this.cacheSaturation = hsv[1]
-        this.service.getCharacteristic(Characteristic.Hue).updateValue(this.cacheHue)
-        this.log('Updating hue to: %s', this.cacheHue)
-        this.service.getCharacteristic(Characteristic.Saturation).updateValue(this.cacheSaturation)
-        this.log('Updating saturation to: %s', this.cacheSaturation)
+        this.service.getCharacteristic(Characteristic.InUse).updateValue(value)
+        this.service.getCharacteristic(Characteristic.Active).updateValue(value)
         break
       default:
         this.log.warn('Unknown characteristic "%s" with value "%s"', characteristic, value)
     }
   },
 
-  setOn: function (value, callback) {
+  setActive: function (value, callback) {
     var url = this.apiroute + '/setState/' + value
     this.log('Setting state: %s', url)
 
@@ -155,58 +126,9 @@ WebValve.prototype = {
         callback(error)
       } else {
         this.log('Successfully set state to %s', value)
+        this.service.getCharacteristic(Characteristic.InUse).updateValue(value)
         callback()
       }
-    }.bind(this))
-  },
-
-  setBrightness: function (value, callback) {
-    var url = this.apiroute + '/setBrightness/' + value
-    this.log('Setting brightness: %s', url)
-
-    this._httpRequest(url, '', this.http_method, function (error, response, responseBody) {
-      if (error) {
-        this.log.warn('Error setting brightness: %s', error.message)
-        callback(error)
-      } else {
-        this.log('Successfully set brightness to %s', value)
-        callback()
-      }
-    }.bind(this))
-  },
-
-  setHue: function (value, callback) {
-    this.log('Setting hue to: %s', value)
-    this.cacheHue = value
-    this._setRGB(callback)
-  },
-
-  setSaturation: function (value, callback) {
-    this.log('Setting saturation to: %s', value)
-    this.cacheSaturation = value
-    this._setRGB(callback)
-  },
-
-  _setRGB: function (callback) {
-    this.count = this.count + 1
-    if (this.count === 1) {
-      callback()
-      return
-    }
-
-    var hex = convert.hsv.hex(this.cacheHue, this.cacheSaturation, 100)
-    var url = this.apiroute + '/setColor/' + hex
-    this.log('Setting color: %s', url)
-
-    this._httpRequest(url, '', this.http_method, function (error, response, responseBody) {
-      if (error) {
-        this.log.warn('Error setting color: %s', error)
-        callback(error)
-      } else {
-        this.log('Successfully set color to: %s', hex)
-        callback()
-      }
-      this.count = 0
     }.bind(this))
   },
 
@@ -218,24 +140,11 @@ WebValve.prototype = {
       .setCharacteristic(Characteristic.SerialNumber, this.serial)
       .setCharacteristic(Characteristic.FirmwareRevision, this.firmware)
 
+    this.service.getCharacteristic(Characteristic.ValveType).updateValue(this.valveType)
+
     this.service
-      .getCharacteristic(Characteristic.On)
-      .on('set', this.setOn.bind(this))
-
-    if (this.enableBrightness) {
-      this.service
-        .getCharacteristic(Characteristic.Brightness)
-        .on('set', this.setBrightness.bind(this))
-    }
-
-    if (this.enableColor) {
-      this.service
-        .getCharacteristic(Characteristic.Saturation)
-        .on('set', this.setSaturation.bind(this))
-      this.service
-        .getCharacteristic(Characteristic.Hue)
-        .on('set', this.setHue.bind(this))
-    }
+      .getCharacteristic(Characteristic.Active)
+      .on('set', this.setActive.bind(this))
 
     this._getStatus(function () {})
 
