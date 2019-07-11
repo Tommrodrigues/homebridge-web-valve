@@ -1,9 +1,9 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 
-// GitHub Page = https://github.com/Tommrodrigues/homebridge-nodemcu-relay
+// GitHub Page = https://github.com/Tommrodrigues/homebridge-web-valve
 
-// Script Type = Relay Momentary, Switch, Modulation
+// Script Type = Modulating relay
 
 // D7 = Relay
 
