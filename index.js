@@ -94,11 +94,11 @@ WebValve.prototype = {
         this.service.getCharacteristic(Characteristic.Active).updateValue(new Error('Polling failed'))
         callback(error)
       } else {
-        this.log('Device response: %s', responseBody)
+        this.log.debug('Device response: %s', responseBody)
         var json = JSON.parse(responseBody)
         this.service.getCharacteristic(Characteristic.Active).updateValue(json.currentState)
         this.service.getCharacteristic(Characteristic.InUse).updateValue(json.currentState)
-        this.log('Updated state: %s', json.currentState)
+        this.log('Updated state to: %s', json.currentState)
         callback()
       }
     }.bind(this))
@@ -107,9 +107,9 @@ WebValve.prototype = {
   _httpHandler: function (characteristic, value) {
     switch (characteristic) {
       case 'state':
-        this.log('Updating %s to: %s', characteristic, value)
         this.service.getCharacteristic(Characteristic.InUse).updateValue(value)
         this.service.getCharacteristic(Characteristic.Active).updateValue(value)
+        this.log('Updated %s to: %s', characteristic, value)
         break
       default:
         this.log.warn('Unknown characteristic "%s" with value "%s"', characteristic, value)
@@ -118,7 +118,7 @@ WebValve.prototype = {
 
   setActive: function (value, callback) {
     var url = this.apiroute + '/setState/' + value
-    this.log('Setting state: %s', url)
+    this.log.debug('Setting state: %s', url)
 
     this._httpRequest(url, '', this.http_method, function (error, response, responseBody) {
       if (error) {
