@@ -125,7 +125,7 @@ WebValve.prototype = {
         this.log.warn('Error setting state: %s', error.message)
         callback(error)
       } else {
-        this.log('Successfully set state to %s', value)
+        this.log('Set state to %s', value)
         this.service.getCharacteristic(Characteristic.InUse).updateValue(value)
         callback()
       }
