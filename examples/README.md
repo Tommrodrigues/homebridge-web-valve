@@ -1,8 +1,6 @@
-# NodeMCU valve
-
 ## Description
 
-These script can interface with the plugin to expose the web-based valve. One script is a simple on/off (for taps, showers etc.) whereas the other modulates on/off and is useful for outdoor misting systems.
+These scripts are designed to interface with the plugin to expose the web-based valve. One script is a simple on/off switch (for taps, showers etc.) whereas the other modulates on/off and is useful for more niche cases like outdoor misting systems.
 
 ## Requirements
 
