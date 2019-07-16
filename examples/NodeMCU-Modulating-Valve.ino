@@ -13,7 +13,7 @@ const char* ssid = "SSID"; //Name of your network
 const char* password = "PASSWORD"; //Password for your network
 const char* relay = "HIGH"; //Relay type (`HIGH` or `LOW`)
 const char* mdns = "relay"; //mDNS name
-const uint32_t modulationOn = 5000; //Time (in ms) for relay to be ON when modulating
+const uint32_t modulationOn = 10000; //Time (in ms) for relay to be ON when modulating
 const uint32_t modulationOff = 20000; //Time (in ms) for relay to be OFF when modulating
 //////////////////////////////////////////////////////////////
 
