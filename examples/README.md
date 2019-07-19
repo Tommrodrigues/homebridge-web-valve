@@ -28,7 +28,7 @@ npm install -g homebridge-web-valve
      {
        "accessory": "WebValve",
        "name": "Valve",
-       "apiroute": "http://myurl.com"
+       "apiroute": "http://valve.local"
      }
 ]
 ```
