@@ -12,7 +12,7 @@
 const char* ssid = "SSID"; //Name of your network
 const char* password = "PASSWORD"; //Password for your network
 const char* relay = "HIGH"; //Relay type (`HIGH` or `LOW`)
-const char* mdns = "relay"; //mDNS name
+const char* mdns = "valve"; //mDNS name
 //////////////////////////////////////////////////////////////
 
 const int relayPin = 13;
