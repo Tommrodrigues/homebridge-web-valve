@@ -22,7 +22,7 @@ int modState = 0;
 
 int relayOn, relayOff;
 
-unsigned long lastMillis = millis();
+unsigned long lastMillis = 0;
 
 WiFiServer server(80);
 
