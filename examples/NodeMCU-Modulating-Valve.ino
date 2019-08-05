@@ -8,12 +8,12 @@
 // D7 = Relay
 
 /////////////////// CHANGE THESE VALUES //////////////////////
-const char* ssid = "SSID"; //Name of your network
-const char* password = "PASSWORD"; //Password for your network
-const String relay = "HIGH"; //Relay type (`HIGH` or `LOW`)
-const char* mdns = "valve"; //mDNS name
-const int modulationOn = 10000; //Time (in ms) for relay to be ON when modulating
-const int modulationOff = 20000; //Time (in ms) for relay to be OFF when modulating
+const char* ssid = "SSID"; // Name of your network
+const char* password = "PASSWORD"; // Password for your network
+const String relay = "HIGH"; // Relay type (`HIGH` or `LOW`)
+const char* mdns = "valve"; // mDNS name
+const int modulationOn = 10000; // Time (in ms) for relay to be ON when modulating
+const int modulationOff = 20000; // Time (in ms) for relay to be OFF when modulating
 //////////////////////////////////////////////////////////////
 
 const int relayPin = 13;
