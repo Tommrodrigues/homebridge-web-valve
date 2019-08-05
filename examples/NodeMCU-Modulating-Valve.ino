@@ -8,29 +8,26 @@
 // D7 = Relay
 
 /////////////////// CHANGE THESE VALUES //////////////////////
-// Required:
 const char* ssid = "SSID"; //Name of your network
 const char* password = "PASSWORD"; //Password for your network
-const char* relay = "HIGH"; //Relay type (`HIGH` or `LOW`)
+const String relay = "HIGH"; //Relay type (`HIGH` or `LOW`)
 const char* mdns = "valve"; //mDNS name
-const uint32_t modulationOn = 10000; //Time (in ms) for relay to be ON when modulating
-const uint32_t modulationOff = 20000; //Time (in ms) for relay to be OFF when modulating
+const int modulationOn = 10000; //Time (in ms) for relay to be ON when modulating
+const int modulationOff = 20000; //Time (in ms) for relay to be OFF when modulating
 //////////////////////////////////////////////////////////////
 
 const int relayPin = 13;
 int state = 0;
+int modState = 0;
 
 int relayOn, relayOff;
-bool led_blinking, led_on;
-uint32_t last_toggle;
+
+unsigned long lastMillis = millis();
 
 WiFiServer server(80);
 
 void setup() {
-  Serial.begin(115200);
-  delay(10);
-
-  if (relay == "LOW") {
+  if (relay.equals("LOW")) {
     relayOn = 0;
     relayOff = 1;
   } else {
@@ -40,6 +37,9 @@ void setup() {
 
   pinMode(relayPin, OUTPUT);
   digitalWrite(relayPin, relayOff);
+
+  Serial.begin(115200);
+  delay(10);
 
   // Connect to WiFi network
   Serial.println();
@@ -70,45 +70,23 @@ void setup() {
   Serial.println("mDNS address: " + String(mdns) + ".local");
 }
 
-//Start of modulation functions
-void update_led() {
-  uint32_t now = millis();
-  if (!led_blinking) {
-    digitalWrite(relayPin, relayOff);
-    led_on = false;
-    last_toggle = now - modulationOff;
-    return;
-  }
-  if (led_on && now - last_toggle >= modulationOn) {
-    digitalWrite(relayPin, relayOff);
-    led_on = false;
-    last_toggle = now;
-  }
-  if (!led_on && now - last_toggle >= modulationOff) {
-    digitalWrite(relayPin, relayOn);
-    led_on = true;
-    last_toggle = now;
-  }
-}
-
-void start_blinking() {
-  digitalWrite(relayPin, relayOn);
-  led_blinking = true;
-  led_on = true;
-  last_toggle = millis();
-}
-
-void stop_blinking() {
-  digitalWrite(relayPin, relayOff);
-  led_blinking = false;
-  led_on = false;
-}
-//End of modulation functions
-
 //Main loop
 void loop() {
 
-  update_led();
+  if (state) {
+    if (!modState && millis() - lastMillis > modulationOff) {
+      digitalWrite(relayPin, relayOn);
+      modState = 1;
+      lastMillis = millis();
+    } else if (modState && millis() - lastMillis > modulationOn) {
+      digitalWrite(relayPin, relayOff);
+      modState = 0;
+      lastMillis = millis();
+    }
+  } else {
+    digitalWrite(relayPin, relayOff);
+    modState = 0;
+  }
 
   MDNS.update();
 
@@ -134,14 +112,8 @@ void loop() {
   client.println("");
 
   // Match the request
-  if (request.indexOf("/setState/1") != -1) {
-    start_blinking();
-    state = 1;
-  }
-
-  if (request.indexOf("/setState/0") != -1) {
-    stop_blinking();
-    state = 0;
+  if (request.indexOf("/setState") != -1) {
+    state = request.substring(14, 15).toInt();
   }
 
   if (request.indexOf("/status") != -1) {
