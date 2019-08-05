@@ -12,8 +12,8 @@ const char* ssid = "SSID"; // Name of your network
 const char* password = "PASSWORD"; // Password for your network
 const String relay = "HIGH"; // Relay type (`HIGH` or `LOW`)
 const char* mdns = "valve"; // mDNS name
-const int modulationOn = 10000; // Time (in ms) for relay to be ON when modulating
-const int modulationOff = 20000; // Time (in ms) for relay to be OFF when modulating
+const int modulationOn = 10; // Time (in seconds) for relay to be ON when modulating
+const int modulationOff = 20; // Time (in seconds) for relay to be OFF when modulating
 //////////////////////////////////////////////////////////////
 
 const int relayPin = 13;
@@ -76,11 +76,11 @@ void loop() {
   MDNS.update();
 
   if (state) {
-    if (!modState && millis() - lastMillis > modulationOff) {
+    if (!modState && millis() - lastMillis > modulationOff * 1000) {
       digitalWrite(relayPin, relayOn);
       modState = 1;
       lastMillis = millis();
-    } else if (modState && millis() - lastMillis > modulationOn) {
+    } else if (modState && millis() - lastMillis > modulationOn * 1000) {
       digitalWrite(relayPin, relayOff);
       modState = 0;
       lastMillis = millis();
