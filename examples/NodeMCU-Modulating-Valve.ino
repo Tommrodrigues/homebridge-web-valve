@@ -73,6 +73,8 @@ void setup() {
 //Main loop
 void loop() {
 
+  MDNS.update();
+
   if (state) {
     if (!modState && millis() - lastMillis > modulationOff) {
       digitalWrite(relayPin, relayOn);
@@ -87,8 +89,6 @@ void loop() {
     digitalWrite(relayPin, relayOff);
     modState = 0;
   }
-
-  MDNS.update();
 
   // Check if a client has connected
   WiFiClient client = server.available();
