@@ -8,11 +8,10 @@
 // D7 = Relay
 
 /////////////////// CHANGE THESE VALUES //////////////////////
-// Required:
-const char* ssid = "SSID"; //Name of your network
-const char* password = "PASSWORD"; //Password for your network
-const char* relay = "HIGH"; //Relay type (`HIGH` or `LOW`)
-const char* mdns = "valve"; //mDNS name
+const char* ssid = "SSID"; // Name of your network
+const char* password = "PASSWORD"; // Password for your network
+const String relay = "HIGH"; // Relay type (`HIGH` or `LOW`)
+const char* mdns = "valve"; // mDNS name
 //////////////////////////////////////////////////////////////
 
 const int relayPin = 13;
@@ -23,10 +22,7 @@ int relayOn, relayOff;
 WiFiServer server(80);
 
 void setup() {
-  Serial.begin(115200);
-  delay(10);
-
-  if (relay == "LOW") {
+  if (relay.equals("LOW")) {
     relayOn = 0;
     relayOff = 1;
   } else {
@@ -36,6 +32,9 @@ void setup() {
 
   pinMode(relayPin, OUTPUT);
   digitalWrite(relayPin, relayOff);
+
+  Serial.begin(115200);
+  delay(10);
 
   // Connect to WiFi network
   Serial.println();
