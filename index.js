@@ -98,7 +98,7 @@ WebValve.prototype = {
         var json = JSON.parse(responseBody)
         this.service.getCharacteristic(Characteristic.Active).updateValue(json.currentState)
         this.service.getCharacteristic(Characteristic.InUse).updateValue(json.currentState)
-        this.log('Updated state to: %s', json.currentState)
+        this.log.debug('Updated state to: %s', json.currentState)
         callback()
       }
     }.bind(this))
