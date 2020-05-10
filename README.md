@@ -1,6 +1,14 @@
+<p align="center">
+  <a href="https://github.com/homebridge/homebridge"><img src="https://raw.githubusercontent.com/homebridge/branding/master/logos/homebridge-color-round-stylized.png" height="140"></a>
+</p>
+
+<span align="center">
+
 # homebridge-web-valve
 
 [![npm](https://img.shields.io/npm/v/homebridge-web-valve.svg)](https://www.npmjs.com/package/homebridge-web-valve) [![npm](https://img.shields.io/npm/dt/homebridge-web-valve.svg)](https://www.npmjs.com/package/homebridge-web-valve)
+
+</span>
 
 ## Description
 
