@@ -74,12 +74,12 @@ Your API should be able to:
 
 2. Set the state when it receives:
 ```
-/setState/INT_VALUE
+/setState?value=INT_VALUE
 ```
 
 ### Optional (if listener is enabled)
 
 1. Update `state` following a manual override by messaging the listen server:
 ```
-/state/INT_VALUE
+/state?value=INT_VALUE
 ```
