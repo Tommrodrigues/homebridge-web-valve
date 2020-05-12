@@ -1,5 +1,8 @@
 #include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
+#include <ArduinoJson.h>
 
 // GitHub Page = https://github.com/Tommrodrigues/homebridge-web-valve
 
@@ -19,7 +22,7 @@ int state = 0;
 
 int relayOn, relayOff;
 
-WiFiServer server(80);
+ESP8266WebServer server(80);
 
 void setup() {
   if (relay.equals("LOW")) {
@@ -52,9 +55,6 @@ void setup() {
   Serial.println();
   Serial.println("Connected successfully");
 
-  // Start the server
-  server.begin();
-
   // Print the IP address
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
@@ -63,50 +63,34 @@ void setup() {
     Serial.println("Error setting up MDNS responder!");
   }
   Serial.println("mDNS address: " + String(mdns) + ".local");
+
+  server.on("/setState", []() {
+    state = server.arg("value").toInt();
+    if (state) {
+      digitalWrite(relayPin, relayOn);
+    } else {
+      digitalWrite(relayPin, relayOff);
+    }
+    server.send(200);
+  });
+
+  server.on("/status", []() {
+    size_t capacity = JSON_OBJECT_SIZE(1);
+    DynamicJsonDocument doc(capacity);
+
+    doc["currentState"] = state;
+
+    String json;
+    serializeJson(doc, json);
+    server.send(200, "application/json", json);
+  });
+
+  // Start the server
+  server.begin();
 }
 
 //Main loop
 void loop() {
-
+  server.handleClient();
   MDNS.update();
-
-  // Check if a client has connected
-  WiFiClient client = server.available();
-  if (!client) {
-    return;
-  }
-
-  // Wait until the client sends some data
-  Serial.println("New client");
-  while (!client.available()) {
-    delay(1);
-  }
-
-  // Read the first line of the request
-  String request = client.readStringUntil('\r');
-  Serial.println(request);
-  client.flush();
-
-  client.println("HTTP/1.1 200 OK");
-  client.println("Content-Type: text/html");
-  client.println("");
-
-  // Match the request
-  if (request.indexOf("/setState/1") != -1) {
-    digitalWrite(relayPin, relayOn);
-    state = 1;
-  }
-
-  if (request.indexOf("/setState/0") != -1) {
-    digitalWrite(relayPin, relayOff);
-    state = 0;
-  }
-
-  if (request.indexOf("/status") != -1) {
-    client.println("{\"currentState\": " + String(state) + "}");
-  }
-
-  delay(1);
-  Serial.println("Client disconnected");
-  Serial.println("");
 }
