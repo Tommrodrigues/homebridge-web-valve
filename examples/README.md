@@ -12,7 +12,7 @@ These scripts are designed to interface with the plugin to expose the web-based 
 
 ## How-to
 
-1. First, follow [this](https://gist.github.com/Tommrodrigues/8d9d3b886936ccea9c21f495755640dd) gist which walks you through how to flash a NodeMCU.
+1. First, install the `ArduinoJson` library from the _Library manager_ in the Arduino IDE, then follow [this](https://gist.github.com/Tommrodrigues/8d9d3b886936ccea9c21f495755640dd) gist which walks you through how to flash a NodeMCU.
 
 2. Connect the NodeMCU to the relay board
 
